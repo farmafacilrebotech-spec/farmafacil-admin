@@ -2,7 +2,7 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { enviarEmail } from "@/utils/email/enviar";
+import { sendEmail } from "@/app/api/_emails/send";
 import { plantillaEnviarQR } from "@/utils/email/qr";
 
 export async function POST(req: Request) {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
     const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
-    await enviarEmail({
+    await sendEmail({
       to: email,
       subject: "QR de tu farmacia – FarmaFácil",
       html: plantillaEnviarQR({ nombre_farmacia, farmacia_id }),
@@ -24,12 +24,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ ok: true });
-
   } catch (err) {
-    console.error("ERROR ENVIANDO QR:", err);
-    return NextResponse.json(
-      { error: "Error enviando email" },
-      { status: 500 }
-    );
+    console.error(err);
+    return NextResponse.json({ error: "Error enviando email QR" }, { status: 500 });
   }
 }

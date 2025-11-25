@@ -2,7 +2,7 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { enviarEmail } from "@/utils/email/enviar";
+import { sendEmail } from "@/app/api/_emails/send";
 import { plantillaEnviarContrato } from "@/utils/email/contrato";
 
 export async function POST(req: Request) {
@@ -11,22 +11,21 @@ export async function POST(req: Request) {
 
     const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
-    await enviarEmail({
+    await sendEmail({
       to: email,
-      subject: "Contrato de servicio – FarmaFácil",
+      subject: "Contrato de Servicio – FarmaFácil",
       html: plantillaEnviarContrato({ nombre_farmacia }),
       attachments: [
-        { filename: "Contrato-FarmaFacil.pdf", content: pdfBuffer }
+        {
+          filename: "Contrato-FarmaFacil.pdf",
+          content: pdfBuffer,
+        },
       ],
     });
 
     return NextResponse.json({ ok: true });
-
   } catch (err) {
     console.error(err);
-    return NextResponse.json(
-      { error: "Error enviando contrato" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error enviando contrato" }, { status: 500 });
   }
 }

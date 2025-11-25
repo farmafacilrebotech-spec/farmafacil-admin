@@ -6,7 +6,8 @@ import { supabaseAdmin } from "@/lib/supabaseClient";
 import { generarYSubirQR, generarQRBase64 } from "@/lib/qr";
 import { enviarWhatsappAltaFarmacia } from "@/lib/whatsapp";
 import { generarPDFBienvenida } from "@/lib/pdf";
-import { enviarEmailBienvenidaPDF } from "@/lib/emailPDF";
+import { sendEmail } from "@/app/api/_emails/send";
+import { plantillaBienvenida } from "@/utils/email/bienvenida";
 
 async function generarIdFarmacia() {
   const year = new Date().getFullYear().toString().slice(-2);
@@ -102,13 +103,16 @@ export async function POST(req: Request) {
       logoFarmaciaBase64: logoBase64 ? `data:image/png;base64,${logoBase64}` : undefined,
     });
     
-    await enviarEmailBienvenidaPDF({
-      emailFarmacia: email,
-      emailPilar: "farmafacil.rebotech@gmail.com",
-      nombreFarmacia: nombre,
-      emailLogin,
-      password,
-      pdfBuffer,
+    await sendEmail({
+      to: email,
+      subject: `Bienvenida a FarmaFácil - ${nombre}`,
+      html: plantillaBienvenida({ nombre_farmacia: nombre, emailLogin, password }),
+      attachments: [
+        {
+          filename: `Bienvenida-${nombre}-${farmaciaId}.pdf`,
+          content: Buffer.from(pdfBuffer),
+        },
+      ],
     });
 
     /* --------------------------------------------- */
