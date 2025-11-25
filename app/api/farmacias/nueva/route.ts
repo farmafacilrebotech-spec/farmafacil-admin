@@ -1,13 +1,13 @@
 // app/api/farmacias/nueva/route.ts
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseClient";
 import { generarYSubirQR, generarQRBase64 } from "@/lib/qr";
 import { enviarWhatsappAltaFarmacia } from "@/lib/whatsapp";
 import { generarPDFBienvenida } from "@/lib/pdf";
-import { sendEmail } from "@/app/api/_emails/send";
-import { plantillaBienvenida } from "@/utils/email/bienvenida";
+import { templateWelcomePDF } from "@/lib/email/templates/welcomePDF";
 
 async function generarIdFarmacia() {
   const year = new Date().getFullYear().toString().slice(-2);
@@ -103,10 +103,17 @@ export async function POST(req: Request) {
       logoFarmaciaBase64: logoBase64 ? `data:image/png;base64,${logoBase64}` : undefined,
     });
     
+    // Dynamic import to avoid build-time bundling
+    const { sendEmail } = await import("@/lib/email/sendEmail");
+
     await sendEmail({
       to: email,
       subject: `Bienvenida a FarmaFácil - ${nombre}`,
-      html: plantillaBienvenida({ nombre_farmacia: nombre, emailLogin, password }),
+      html: templateWelcomePDF({ 
+        nombreFarmacia: nombre, 
+        emailLogin, 
+        password 
+      }),
       attachments: [
         {
           filename: `Bienvenida-${nombre}-${farmaciaId}.pdf`,

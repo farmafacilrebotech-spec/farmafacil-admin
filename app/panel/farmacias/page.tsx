@@ -3,6 +3,10 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
+// Force dynamic rendering - requires env vars at runtime
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default async function FarmaciasPanelPage() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

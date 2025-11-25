@@ -1,9 +1,9 @@
 // app/api/farmacias/enviar-pdf-bienvenida/route.ts
-import { NextResponse } from "next/server";
-import { sendEmail } from "@/app/api/_emails/send";
-import { plantillaBienvenida } from "@/utils/email/bienvenida";
-
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+import { NextResponse } from "next/server";
+import { templateWelcomePDF } from "@/lib/email/templates/welcomePDF";
 
 export async function POST(req: Request) {
   try {
@@ -18,11 +18,14 @@ export async function POST(req: Request) {
 
     const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
-    const html = plantillaBienvenida({
+    const html = templateWelcomePDF({
       nombreFarmacia,
       emailLogin,
       password,
     });
+
+    // Dynamic import to avoid build-time bundling
+    const { sendEmail } = await import("@/lib/email/sendEmail");
 
     await sendEmail({
       to: [emailFarmacia, emailPilar],

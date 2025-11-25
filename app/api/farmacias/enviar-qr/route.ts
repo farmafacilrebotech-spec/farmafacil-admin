@@ -1,9 +1,9 @@
 // app/api/farmacias/enviar-qr/route.ts
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { sendEmail } from "@/app/api/_emails/send";
-import { plantillaEnviarQR } from "@/utils/email/qr";
+import { templateSendQR } from "@/lib/email/templates/sendQR";
 
 export async function POST(req: Request) {
   try {
@@ -11,10 +11,13 @@ export async function POST(req: Request) {
 
     const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
+    // Dynamic import to avoid build-time bundling
+    const { sendEmail } = await import("@/lib/email/sendEmail");
+
     await sendEmail({
       to: email,
       subject: "QR de tu farmacia – FarmaFácil",
-      html: plantillaEnviarQR({ nombre_farmacia, farmacia_id }),
+      html: templateSendQR({ nombre_farmacia, farmacia_id }),
       attachments: [
         {
           filename: `QR-${farmacia_id}.pdf`,
