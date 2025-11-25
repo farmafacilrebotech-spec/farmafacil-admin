@@ -1,14 +1,11 @@
-
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
-
 export const runtime = "edge";
+
+import { enviarEmail } from "@/utils/email/enviar";
 
 export async function POST(req: Request) {
   try {
     const { email, nombre_farmacia, farmacia_id } = await req.json();
-
-    const resend = new Resend(process.env.RESEND_API_KEY);
 
     const html = `
       <div style="font-family: Arial; font-size: 15px;">
@@ -30,17 +27,16 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    const data = await resend.emails.send({
-      from: "FarmaFácil <noreply@farmafacil.app>",
+    await enviarEmail({
       to: email,
       subject: "Bienvenido a FarmaFácil",
       html,
     });
 
-    return NextResponse.json({ ok: true, data });
+    return Response.json({ ok: true });
 
   } catch (error) {
     console.error("ERROR EN EMAIL:", error);
-    return NextResponse.json({ error }, { status: 500 });
+    return NextResponse.json({ error: "Error enviando email" }, { status: 500 });
   }
 }
