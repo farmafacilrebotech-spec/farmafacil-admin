@@ -1,8 +1,6 @@
 // lib/emailPDF.ts
-"use server";
-export const runtime = "nodejs";
-
 import { Resend } from "resend";
+import { enviarEmail } from "@/utils/email/enviar";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 

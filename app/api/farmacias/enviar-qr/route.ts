@@ -1,5 +1,4 @@
 // app/api/farmacias/enviar-qr/route.ts
-"use server";
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";

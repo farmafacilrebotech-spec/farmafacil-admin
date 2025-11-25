@@ -1,7 +1,4 @@
 // utils/email/enviar.ts
-"use server";
-export const runtime = "nodejs";
-
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
