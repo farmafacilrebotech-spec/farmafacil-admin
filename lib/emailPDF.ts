@@ -1,6 +1,10 @@
+// lib/emailPDF.ts
+"use server";
+export const runtime = "nodejs";
+
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function enviarEmailBienvenidaPDF({
   emailFarmacia,
@@ -17,24 +21,25 @@ export async function enviarEmailBienvenidaPDF({
   password: string;
   pdfBuffer: Uint8Array;
 }) {
-  const htmlContent = `
+  const html = `
     <p>Hola <strong>${nombreFarmacia}</strong>,</p>
-    <p>Tu farmacia ha sido dada de alta correctamente en <strong>FarmaFácil</strong>.</p>
-    <p><strong>🔐 Datos de acceso al Panel:</strong><br>
+    <p>Bienvenid@ a <strong>FarmaFácil</strong>.</p>
+
+    <p><strong>🔐 Accesos al Panel:</strong><br>
     Usuario: ${emailLogin}<br>
     Contraseña: ${password}</p>
 
-    <p>Adjuntamos tu <strong>PDF de Bienvenida</strong> con tu QR personalizado.</p>
+    <p>Adjuntamos tu PDF de bienvenida con tu QR personalizado.</p>
 
     <p>Un saludo,<br>
     <strong>Pilar – FarmaFácil / ReBoTech Solutions</strong></p>
   `;
 
   await resend.emails.send({
-    from: process.env.EMAIL_FROM || "FarmaFácil <noreply@farmafacil.com>",
-    to: [emailFarmacia, emailPilar], // ENVIAR A AMBOS
-    subject: `Bienvenida a FarmaFácil - ${nombreFarmacia}`,
-    html: htmlContent,
+    from: "FarmaFácil <noreply@farmafacil.app>",
+    to: [emailFarmacia, emailPilar],
+    subject: `Bienvenida a FarmaFácil – ${nombreFarmacia}`,
+    html,
     attachments: [
       {
         filename: `Bienvenida_${nombreFarmacia}.pdf`,

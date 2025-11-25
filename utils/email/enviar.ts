@@ -1,4 +1,10 @@
+// utils/email/enviar.ts
+"use server";
+export const runtime = "nodejs";
+
 import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function enviarEmail({
   to,
@@ -6,13 +12,11 @@ export async function enviarEmail({
   html,
   attachments = [],
 }: {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   attachments?: Array<{ filename: string; content: Buffer }>;
 }) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
   return await resend.emails.send({
     from: "FarmaFácil <noreply@farmafacil.app>",
     to,

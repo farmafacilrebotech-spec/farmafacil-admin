@@ -1,4 +1,5 @@
-export const runtime = "edge";
+// app/api/farmacias/enviar-contrato/route.ts
+export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { enviarEmail } from "@/utils/email/enviar";
@@ -15,16 +16,17 @@ export async function POST(req: Request) {
       subject: "Contrato de servicio – FarmaFácil",
       html: plantillaEnviarContrato({ nombre_farmacia }),
       attachments: [
-        {
-          filename: "Contrato-FarmaFacil.pdf",
-          content: pdfBuffer,
-        },
+        { filename: "Contrato-FarmaFacil.pdf", content: pdfBuffer }
       ],
     });
 
     return NextResponse.json({ ok: true });
+
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Error enviando contrato" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error enviando contrato" },
+      { status: 500 }
+    );
   }
 }
