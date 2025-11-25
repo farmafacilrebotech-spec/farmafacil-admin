@@ -1,14 +1,13 @@
 
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 
-export const runtime = "nodejs"; // necesario para usar librerías de servidor
+export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
     const { email, nombre_farmacia, farmacia_id } = await req.json();
 
-    // ⬅️ IMPORT DINÁMICO (esto NECESITA Next.js para que funcione)
-    const { Resend } = await import("resend");
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const html = `
