@@ -1,30 +1,39 @@
-import { NextResponse } from "next/server";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { email, nombre_farmacia, farmacia_id } = await req.json();
+    const body = await req.json();
+    const { telefono, nombre_farmacia, farmacia_id } = body;
 
-    const { data, error } = await resend.emails.send({
+    // Import dinámico de Resend para evitar ReactServerComponentsError
+    const { Resend } = await import("resend");
+    const resend = new Resend(process.env.RESEND_API_KEY!);
+
+    const mensaje = `
+Hola! 👋
+
+🎉 Bienvenid@ a FarmaFácil, ${nombre_farmacia}!
+
+Tu farmacia ha sido registrada correctamente con el código:
+👉 *${farmacia_id}*
+
+En unos minutos recibirás un segundo mensaje con tus accesos al panel.
+
+Gracias por confiar en ReboTech Solutions 💚
+`;
+
+    // Enviar email o WhatsApp según configuración
+    await resend.emails.send({
       from: process.env.EMAIL_FROM!,
-      to: email,
-      subject: `¡Bienvenido/a a FarmaFácil!`,
-      html: `
-        <h2>Hola ${nombre_farmacia}</h2>
-        <p>Tu farmacia ya está registrada en FarmaFácil.</p>
-        <p>Código interno: <strong>${farmacia_id}</strong></p>
-        <p>Pronto recibirás tus credenciales de acceso.</p>
-        <br />
-        <p>Gracias por confiar en nosotros.</p>
-      `,
+      to: process.env.EMAIL_TO_TEST ?? "tu_email",
+      subject: `Bienvenida a FarmaFácil (${nombre_farmacia})`,
+      text: mensaje,
     });
 
-    if (error) throw error;
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
 
-    return NextResponse.json({ ok: true, data });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error: any) {
+    console.error("Error enviando bienvenida:", error);
+    return new Response(JSON.stringify({ error: true }), { status: 500 });
   }
 }
