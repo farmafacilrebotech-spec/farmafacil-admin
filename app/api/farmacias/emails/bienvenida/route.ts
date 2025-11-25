@@ -1,39 +1,34 @@
-export const runtime = "nodejs";
+// Import dinámico de Resend para evitar ReactServerComponentsError
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { telefono, nombre_farmacia, farmacia_id } = body;
+    const { nombre_farmacia, email, telefono, farmacia_id } = await req.json();    
+    const html = `
+      <div style="font-family: Arial; font-size: 15px;">
+        <h2>🎉¡Bienvenido/a a FarmaFácil!, <strong>${nombre_farmacia}</strong></h2>
 
-    // Import dinámico de Resend para evitar ReactServerComponentsError
-    const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY!);
-
-    const mensaje = `
-Hola! 👋
-
-🎉 Bienvenid@ a FarmaFácil, ${nombre_farmacia}!
-
-Tu farmacia ha sido registrada correctamente con el código:
-👉 *${farmacia_id}*
-
-En unos minutos recibirás un segundo mensaje con tus accesos al panel.
-
-Gracias por confiar en ReboTech Solutions 💚
-`;
-
-    // Enviar email o WhatsApp según configuración
+        <p>Tu farmacia ha sido registrada correctamente.</p>
+        <p>ID de farmacia: <strong>${farmacia_id}</strong></p>
+        <p>Teléfono: ${telefono}</p>
+        <p>Ya puedes agendar tu cita para completar tus datos.</p>
+        <p>Gracias por confiar en FarmaFácil 💚</p>
+      </div>
+    `;
+    
     await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
-      to: process.env.EMAIL_TO_TEST ?? "tu_email",
-      subject: `Bienvenida a FarmaFácil (${nombre_farmacia})`,
-      text: mensaje,
+        from: process.env.EMAIL_FROM!,
+        to: email,
+        subject: `¡Bienvenido/a a FarmaFácil, ${nombre_farmacia}!`,
+        html,
     });
 
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
-
-  } catch (error: any) {
-    console.error("Error enviando bienvenida:", error);
-    return new Response(JSON.stringify({ error: true }), { status: 500 });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Error enviando email:", error);
+    return NextResponse.json({ error: "Error enviando email" }, { status: 500 });
   }
 }
