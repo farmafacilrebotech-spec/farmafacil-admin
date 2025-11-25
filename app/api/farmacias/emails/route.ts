@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseClient';
 import { generarFarmaciaId } from '@/lib/farmaciaIdGenerator';
 import { generarYSubirQR, generarQRBase64 } from '@/lib/qr';
-import { enviarEmailBienvenida } from '@/lib/email';
+import { sendEmail } from '@/app/api/_emails/send';
+import { plantillaBienvenida } from '@/utils/email/bienvenida';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
@@ -127,15 +128,16 @@ export async function POST(request: NextRequest) {
     // PASO 6: Enviar email de bienvenida
     console.log('Enviando email de bienvenida...');
     try {
-      const qrBase64 = await generarQRBase64(farmacia_id);
-      
-      await enviarEmailBienvenida({
-        emailDestino: email,
-        nombreFarmacia: nombre_farmacia,
-        farmaciaId: farmacia_id,
-        usuario: email,
+      const html = plantillaBienvenida({
+        nombre_farmacia,
+        emailLogin: email,
         password: password,
-        qrBase64: qrBase64,
+      });
+      
+      await sendEmail({
+        to: email,
+        subject: `Bienvenido a FarmaFácil - ${nombre_farmacia}`,
+        html,
       });
 
       console.log('Email enviado correctamente');

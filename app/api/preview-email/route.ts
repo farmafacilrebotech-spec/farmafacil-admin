@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { enviarEmailBienvenida } from "@/lib/email";
 
 export async function GET() {
   const html = await crearHtmlPrueba();

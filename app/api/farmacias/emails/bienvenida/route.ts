@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-export const runtime = "edge";
+export const runtime = "nodejs";
 
-import { enviarEmail } from "@/utils/email/enviar";
+import { sendEmail } from "@/app/api/_emails/send";
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    await enviarEmail({
+    await sendEmail({
       to: email,
       subject: "Bienvenido a FarmaFácil",
       html,

@@ -1,7 +1,7 @@
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { enviarEmail } from "@/utils/email/enviar";
+import { sendEmail } from "@/app/api/_emails/send";
 import { plantillaReenvioCredenciales } from "@/utils/email/credenciales";
 
 export async function POST(req: Request) {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
     const html = plantillaReenvioCredenciales(body);
 
-    await enviarEmail({
+    await sendEmail({
       to: body.email_acceso,
       subject: "Tus credenciales de FarmaFácil",
       html,
