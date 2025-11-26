@@ -8,6 +8,7 @@ import { generarYSubirQR, generarQRBase64 } from "@/lib/qr";
 import { enviarWhatsappAltaFarmacia } from "@/lib/whatsapp";
 import { generarPDFBienvenida } from "@/lib/pdf";
 import { templateWelcomePDF } from "@/lib/email/templates/welcomePDF";
+import { generarQRConLogo } from "@/lib/qr/generarQRConLogo";
 
 async function generarIdFarmacia() {
   const year = new Date().getFullYear().toString().slice(-2);
@@ -68,9 +69,24 @@ export async function POST(req: Request) {
       logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/farmacias-logos/${fileName}`;
     }
 
-    const qrUrl = await generarYSubirQR(farmaciaId);
-    const qrBase64 = await generarQRBase64(farmaciaId);
 
+    const qrBase64ConLogo = await generarQRConLogo({
+      url: `${process.env.NEXT_PUBLIC_CLIENTE_URL}/farmacia/${farmaciaId}`,
+      logoBase64, // el logo que ya recibes en la alta
+    });
+    
+    // SUBIR EL QR FINAL A SUPABASE
+    const fileNameQR = `${farmaciaId}.png`;
+    
+    await supabaseAdmin.storage
+      .from("farmacias-qr")
+      .upload(fileNameQR, Buffer.from(qrBase64ConLogo.replace(/^data:image\/png;base64,/, ""), "base64"), {
+        contentType: "image/png",
+        upsert: true,
+      });
+    
+    const qrUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/farmacias-qr/${fileNameQR}`;
+    
     await supabaseAdmin.from("farmacias").insert({
       farmacia_id: farmaciaId,
       nombre_farmacia: nombre,
@@ -99,7 +115,7 @@ export async function POST(req: Request) {
 
     const pdfBuffer = await generarPDFBienvenida({
       nombreFarmacia: nombre,
-      qrBase64,
+      qrBase64: qrBase64ConLogo.replace(/^data:image\/png;base64,/, ""),
       logoFarmaciaBase64: logoBase64 ? `data:image/png;base64,${logoBase64}` : undefined,
     });
     
